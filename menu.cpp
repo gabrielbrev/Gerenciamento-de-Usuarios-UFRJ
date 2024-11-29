@@ -3,7 +3,6 @@
 
 #include <iostream>
 #include <string>
-#include <thread>
 #include <chrono> 
 #include <regex>
 #include <sstream>
@@ -231,8 +230,6 @@ int Menu::start() {
 
         bool valid = this->inputAndValidate(&opt, 0, 5);
         if (!valid) {
-            std::cout << "Opção inválida\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
             this->clearConsole();
             continue;
         }
@@ -323,8 +320,6 @@ void Menu::showUsers(std::vector<User>& users) {
 
         bool valid = this->inputAndValidate(&opt, 0, 3);
         if (!valid) {
-            std::cout << "Opção inválida\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
 
@@ -419,8 +414,6 @@ void Menu::selectUser(std::vector<User>& users) {
         
         bool valid = this->inputAndValidate(&opt, 0, 2);
         if (!valid) {
-            std::cout << "Opção inválida\n";
-            std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
 
