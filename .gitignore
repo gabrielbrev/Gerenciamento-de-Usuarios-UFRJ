@@ -1,0 +1,30 @@
+# Ignore virtual environment
+.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore database file
+database.db
+
+# Ignore build artifacts
+*.o
+*.so
+*.out
+
+# Ignore text editor and IDE configurations
+.vscode/
+
+# Ignore Makefile artifacts
+*.d
+*.log
+
+# Ignore Python package requirements lock files
+*.txt.lock
+
+# General system files
+.DS_Store
+Thumbs.db
+
+app
