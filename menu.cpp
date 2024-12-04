@@ -42,6 +42,14 @@ void Menu::clearConsole() {
 
 bool Menu::inputAndValidate(int* input, int a, int b) {
     std::cin >> *input;
+    
+    if (std::cin.fail()) {
+        *input = a - 1; // Garantir que o input está fora do intervalo
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return false;
+    }
+
     return (*input >= a && *input <= b);
 }
 
@@ -89,8 +97,8 @@ bool Menu::isValidDate(int day, int month, int year) {
 }
 
 bool Menu::isValidEmail(const std::string& email) {
-    std::regex padrao_email(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})");
-    return std::regex_match(email, padrao_email);
+    std::regex emailpattern(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})");
+    return std::regex_match(email, emailpattern);
 }
 
 std::string Menu::inputCPF() {
@@ -108,41 +116,41 @@ std::string Menu::inputCPF() {
 }
 
 std::string Menu::inputPostalCode() {
-    std::string postalcode;
+    std::string postalCode;
     std::cout << "Digite o CEP (somente números): ";
-    std::cin >> postalcode;
+    std::cin >> postalCode;
 
-    while (postalcode.length() != 8 || !isOnlyDigits(postalcode)) {
+    while (postalCode.length() != 8 || !isOnlyDigits(postalCode)) {
         std::cout << "CEP inválido. Digite exatamente 8 números: ";
-        std::cin >> postalcode;
+        std::cin >> postalCode;
     }
 
     // Retorna o CEP formatado
-    return postalcode.substr(0, 5) + "-" + postalcode.substr(5, 3);
+    return postalCode.substr(0, 5) + "-" + postalCode.substr(5, 3);
 }
 
 std::string Menu::inputPhoneNumber() {
     // Numero de celular no formato (XXX) XXXX-XXXX para consistencia com o Faker
-    std::string phonenumber;
+    std::string phoneNumber;
     std::cout << "Digite o número de telefone (somente números), ou deixe vazio: ";
     std::cin.ignore();  // Ignora o caractere '\n' que possa estar no buffer
-    std::getline(std::cin, phonenumber);
+    std::getline(std::cin, phoneNumber);
 
-    if (phonenumber.empty()) {
+    if (phoneNumber.empty()) {
         return "";
     }
 
-    while (phonenumber.length() != 10 || !isOnlyDigits(phonenumber)) {
+    while (phoneNumber.length() != 10 || !isOnlyDigits(phoneNumber)) {
         std::cout << "Número de telefone inválido. Digite exatamente 10 números, ou deixe vazio: ";
-        std::getline(std::cin, phonenumber);
+        std::getline(std::cin, phoneNumber);
 
-        if (phonenumber.empty()) {
+        if (phoneNumber.empty()) {
             return "";
         }
     }
 
     // Retorna o número de telefone formatado
-    return "(0" + phonenumber.substr(0, 2) + ") " + phonenumber.substr(2, 4) + "-" + phonenumber.substr(6, 4);
+    return "(0" + phoneNumber.substr(0, 2) + ") " + phoneNumber.substr(2, 4) + "-" + phoneNumber.substr(6, 4);
 }
 
 std::string Menu::inputDate() {
@@ -217,6 +225,8 @@ int Menu::start() {
 
     int opt;
     do {
+        this->clearConsole();
+
         std::cout << "Bem vindo ao sistema de gerenciamento de usuários\n\n";
         this->manager.printMessage();
         std::cout << "[1] Adicionar usuário\n";
@@ -235,6 +245,11 @@ int Menu::start() {
         }
 
         switch (opt) {
+            case 0: {
+                this->manager.close();
+                break;
+            }
+
             case 1: {
                 this->manager.addUser(
                     this->inputEmail(),
@@ -265,9 +280,20 @@ int Menu::start() {
             }
 
             case 4: {
-                std::cout << "Numero do usuários a serem gerados: ";
+                if (!manager.getHasDependencies()){
+                    std::cout << "Essa ação utiliza uma biblioteca em python.\n";
+                    std::cout << "Caso ela não esteja instalada em sua máquina, o programa realiza a instalação para prosseguir e a remove quando for encerrado.\n";
+                    std::cout << "Deseja prosseguir? (s/n)\n-> ";
+                    std::string confirm;
+                    bool valid = this->inputAndValidate(&confirm, "s");
+                    if (!valid) {
+                        break;
+                    }
+                }
+
+                std::cout << "Numero do usuários a serem gerados (1 - 100k): ";
                 int num;
-                bool valid = this->inputAndValidate(&num, 1, std::pow(2, 31) - 1);
+                valid = this->inputAndValidate(&num, 1, 100000);
                 if (!valid) {
                     break;
                 }
@@ -283,11 +309,9 @@ int Menu::start() {
                     break;
                 }
                 this->manager.eraseDatabase();
-                this->manager.init();
                 break;
             }
         }
-        this->clearConsole();
     } while (opt != 0);
 
     return 0;
@@ -495,9 +519,9 @@ void Menu::editUser(User& user) {
             break;
         }
         case 7: {
-            std::string postalcode = inputPostalCode();
-            this->manager.editUser(user.getUserId(), "cep", postalcode);
-            user.setPostalCode(postalcode);
+            std::string postalCode = inputPostalCode();
+            this->manager.editUser(user.getUserId(), "cep", postalCode);
+            user.setPostalCode(postalCode);
             break;
         }
         case 8: {

@@ -17,6 +17,10 @@ void DataManager::printMessage() const {
     }
 }
 
+bool DataManager::getHasDependencies() const {
+    return this->hasDependencies;
+}
+
 std::string DataManager::execute(const std::string& command) {   
     // Executa o comando usando popen e armazena todo o output em apenas uma string 
     FILE* pipe = popen(command.c_str(),  "r");
@@ -56,19 +60,35 @@ std::vector<std::string> DataManager::parseResults(const std::string& str) {
 
 int DataManager::init() {
     try {
-        std::string result = execute("python3 db/init_db.py");
-        std::vector<std::string> values = parseResults(result);
+        std::cout << "Conectando ao banco de dados...\n";
+        std::string result = this->execute("python3 db/init_db.py");
+        std::vector<std::string> values = this->parseResults(result);
+        this->uninstallDependencies = false;
+        this->hasDependencies = false;
         return 0;
     } catch (const std::exception& e) {
         return 1;
     }
 }
 
+int DataManager::close() {
+    if (this->uninstallDependencies) {
+        try {
+            std::cout << "Limpando dependências...\n";
+            this->execute("pip3 uninstall faker -y");
+        } catch (const std::exception& e) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 std::vector<User> DataManager::listUsers() {
     std::vector<User> users;
     try {
-        std::string result = execute("python3 db/list_users.py");
-        std::vector<std::string> values = parseResults(result);
+        std::cout << "Buscando usuários...\n";
+        std::string result = this->execute("python3 db/list_users.py");
+        std::vector<std::string> values = this->parseResults(result);
 
         // Os atributos dos usuários são retornados em sequencia
         // Itera o vetor a partir da terceira posição e de 9 em 9 (qtd. atributos de cada usuário)
@@ -93,8 +113,9 @@ std::string DataManager::trim(const std::string& str) {
 std::vector<User> DataManager::searchUsers(const std::string& name) {
     std::vector<User> users;
     try {
-        std::string result = execute("python3 db/get_users_by_name.py " + trim(name));
-        std::vector<std::string> values = parseResults(result);
+        std::cout << "Buscando usuários...\n";
+        std::string result = this->execute("python3 db/get_users_by_name.py " + trim(name));
+        std::vector<std::string> values = this->parseResults(result);
 
         for (int i  = 2; i < static_cast<int>(values.size()); i += 9) {
             User u = User(values[i], values[i + 1], values[i + 2], values[i + 3], values[i + 4], values[i + 5], values[i + 6], values[i + 7], values[i + 8]);
@@ -106,8 +127,9 @@ std::vector<User> DataManager::searchUsers(const std::string& name) {
 
 int DataManager::deleteUser(const int id) {
     try {
-        std::string result = execute("python3 db/delete_user.py " + std::to_string(id));
-        std::vector<std::string> values = parseResults(result);
+        std::cout << "Deletando usuário...\n";
+        std::string result = this->execute("python3 db/delete_user.py " + std::to_string(id));
+        std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {
         return 1;
@@ -116,8 +138,9 @@ int DataManager::deleteUser(const int id) {
 
 int DataManager::eraseDatabase() {
     try {
-        std::string result = execute("python3 db/erase_data.py");
-        std::vector<std::string> values = parseResults(result);
+        std::cout << "Resetando dados usuário...\n";
+        std::string result = this->execute("python3 db/erase_data.py");
+        std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {
         return 1;
@@ -126,8 +149,27 @@ int DataManager::eraseDatabase() {
 
 int DataManager::generateRandoUsers(int num) {
     try {
-        std::string result = execute("python3 db/generate_users.py " + std::to_string(num));
-        std::vector<std::string> values = parseResults(result);
+        if (!this->hasDependencies) {
+            std::cout << "Tentando instalar as dependências do script...\n";
+            std::string list_before_install = this->execute("pip3 list");
+            this->execute("pip3 install faker");
+            std::string list_after_install = this->execute("pip3 list");
+            bool installed = list_before_install != list_after_install;
+            
+            if (installed) {
+                this->uninstallDependencies = true;
+                std::cout << "Sucesso.\n";
+            } else {
+                std::cout << "Sua máquina já possui as dependências necessárias.\n";
+            }
+
+            this->hasDependencies = true;
+        }
+
+        std::cout << "Gerando usuários aleatórios...\n";
+        std::string result = this->execute("python3 db/generate_users.py " + std::to_string(num));
+        std::vector<std::string> values = this->parseResults(result);
+
         return 0;
     } catch (const std::exception& e) {
         return 1;
@@ -145,9 +187,10 @@ int DataManager::addUser(
     const std::string& phoneNumber
 ) {
     try {
+        std::cout << "Adicionando usuário...\n";
         std::string command = "python3 db/add_user.py " + email + " " + password + " '" + name + "' " + birthdate + " " + gender + " " + cpf + " " + zipCode + " '" + phoneNumber + "'";
-        std::string result = execute(command);
-        std::vector<std::string> values = parseResults(result);
+        std::string result = this->execute(command);
+        std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {
         return 1;
@@ -156,8 +199,9 @@ int DataManager::addUser(
 
 int DataManager::editUser(const int id, const std::string &column, const std::string &value) {
     try {
-        std::string result = execute("python3 db/modify_user.py " + column + " '" + value + "' " + std::to_string(id));
-        std::vector<std::string> values = parseResults(result);
+        std::cout << "Alterando usuário...\n";
+        std::string result = this->execute("python3 db/modify_user.py " + column + " '" + value + "' " + std::to_string(id));
+        std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {
         return 1;

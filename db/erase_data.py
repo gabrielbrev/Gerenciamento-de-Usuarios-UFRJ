@@ -10,14 +10,29 @@ try:
     ''')
     conn.commit()
 
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS Usuario (
+            id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
+            senha TEXT NOT NULL,
+            nome TEXT NOT NULL,
+            dataNasc DATE NOT NULL,
+            genero TEXT CHECK(genero IN ('F', 'M')) NOT NULL,
+            cpf TEXT NOT NULL UNIQUE,
+            cep TEXT NOT NULL,
+            telefone TEXT
+        );
+    ''')
+    conn.commit()
+
     returns.values({
         'ok': 'true',
-        'msg': 'Tabela de usuários deletada com sucesso',
+        'msg': 'Dados resetados com sucesso',
     })
 except sqlite3.Error as e:
     returns.values({
         'ok': 'false',
-        'msg': 'Erro ao deletar tabela de usuários'
+        'msg': 'Erro ao resetar dados'
     })
 
 conn.close()

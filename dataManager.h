@@ -9,6 +9,7 @@
 class DataManager {
 public:
     int init();
+    int close();
     std::vector<User> listUsers();
     std::vector<User> searchUsers(const std::string& name);
     int addUser(
@@ -31,9 +32,12 @@ public:
     int generateRandoUsers(int num);
     void setMessage(const std::string& msg);
     void printMessage() const;
+    bool getHasDependencies() const;
 
 private:
     std::string message;
+    bool uninstallDependencies;
+    bool hasDependencies;
 
     std::string execute(const std::string& command);
     std::vector<std::string> parseResults(const std::string& str);
