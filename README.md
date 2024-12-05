@@ -17,6 +17,20 @@ O projeto depende dos seguintes componentes:
 
 3. Quando terminar, você pode executar o comando: **make clean**. Isso vai deletar os arquivos gerados pela compilação do projeto.
 
+## Como utilizar
+
+### 1. Login:
+
+Ao executar o programa, é necessário fazer login. É apresentada uma simples verificação de usuário e senha, que estão ambos definidos no código do arquivo `main.cpp` como **admin**.
+
+### 2. Menu:
+
+Após entrar no menu, o programa irá apresentar opções de funcionalidade (números), confirmações (sim ou não) e informações de usuário/pesquisa, que devem ser fornecidos no console.
+
+### 3. Encerramento:
+
+Certifique-se de encerrar o programa pela opção fornecida ao invés de terminar o processo, pois ele realiza a limpeza de dependências potêncialmente instaladas durante a sua execução.
+
 ## Funcionalidades
 
 -   **Listar usuários**: Exibe todos os usuários cadastrados no banco de dados.
