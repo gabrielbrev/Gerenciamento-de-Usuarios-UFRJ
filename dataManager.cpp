@@ -75,7 +75,7 @@ int DataManager::init() {
 
     try {
         std::cout << "Conectando ao banco de dados...\n";
-        std::string result = this->execute("python3 db/init_db.py");
+        std::string result = this->execute(this->pythonCommand + "db/init_db.py");
         std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {
