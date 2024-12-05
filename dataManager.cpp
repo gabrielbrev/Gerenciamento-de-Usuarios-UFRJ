@@ -7,6 +7,20 @@
 #include <vector>
 #include <sstream>
 
+#define OTHER 0
+#define WIN 1
+#define LIN_MAC 2
+
+void DataManager::setSystemType(int systemType) {
+    switch (systemType) {
+        case LIN_MAC:
+            this->pythonCommand = "python3 ";
+            break;
+        default:
+            this->pythonCommand = "python ";
+    }
+}
+
 void DataManager::setMessage(const std::string& msg) {
     this->message = msg;
 }
@@ -15,10 +29,6 @@ void DataManager::printMessage() const {
     if (this->message != "") {
         std::cout << this->message << std::endl;
     }
-}
-
-bool DataManager::getHasDependencies() const {
-    return this->hasDependencies;
 }
 
 std::string DataManager::execute(const std::string& command) {   
@@ -59,35 +69,25 @@ std::vector<std::string> DataManager::parseResults(const std::string& str) {
 }
 
 int DataManager::init() {
+    if (this->pythonCommand == "") {
+        throw std::runtime_error("O tipo de sistema não foi definido");
+    }
+
     try {
         std::cout << "Conectando ao banco de dados...\n";
         std::string result = this->execute("python3 db/init_db.py");
         std::vector<std::string> values = this->parseResults(result);
-        this->uninstallDependencies = false;
-        this->hasDependencies = false;
         return 0;
     } catch (const std::exception& e) {
         return 1;
     }
 }
 
-int DataManager::close() {
-    if (this->uninstallDependencies) {
-        try {
-            std::cout << "Limpando dependências...\n";
-            this->execute("pip3 uninstall faker -y");
-        } catch (const std::exception& e) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
 std::vector<User> DataManager::listUsers() {
     std::vector<User> users;
     try {
         std::cout << "Buscando usuários...\n";
-        std::string result = this->execute("python3 db/list_users.py");
+        std::string result = this->execute(this->pythonCommand + "db/list_users.py");
         std::vector<std::string> values = this->parseResults(result);
 
         // Os atributos dos usuários são retornados em sequencia
@@ -114,7 +114,7 @@ std::vector<User> DataManager::searchUsers(const std::string& name) {
     std::vector<User> users;
     try {
         std::cout << "Buscando usuários...\n";
-        std::string result = this->execute("python3 db/get_users_by_name.py " + trim(name));
+        std::string result = this->execute(this->pythonCommand + "db/get_users_by_name.py " + trim(name));
         std::vector<std::string> values = this->parseResults(result);
 
         for (int i  = 2; i < static_cast<int>(values.size()); i += 9) {
@@ -128,7 +128,7 @@ std::vector<User> DataManager::searchUsers(const std::string& name) {
 int DataManager::deleteUser(const int id) {
     try {
         std::cout << "Deletando usuário...\n";
-        std::string result = this->execute("python3 db/delete_user.py " + std::to_string(id));
+        std::string result = this->execute(this->pythonCommand + "db/delete_user.py " + std::to_string(id));
         std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {
@@ -139,7 +139,7 @@ int DataManager::deleteUser(const int id) {
 int DataManager::eraseDatabase() {
     try {
         std::cout << "Resetando dados usuário...\n";
-        std::string result = this->execute("python3 db/erase_data.py");
+        std::string result = this->execute(this->pythonCommand + "db/erase_data.py");
         std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {
@@ -149,25 +149,8 @@ int DataManager::eraseDatabase() {
 
 int DataManager::generateRandoUsers(int num) {
     try {
-        if (!this->hasDependencies) {
-            std::cout << "Tentando instalar as dependências do script...\n";
-            std::string list_before_install = this->execute("pip3 list");
-            this->execute("pip3 install faker");
-            std::string list_after_install = this->execute("pip3 list");
-            bool installed = list_before_install != list_after_install;
-            
-            if (installed) {
-                this->uninstallDependencies = true;
-                std::cout << "Sucesso.\n";
-            } else {
-                std::cout << "Sua máquina já possui as dependências necessárias.\n";
-            }
-
-            this->hasDependencies = true;
-        }
-
         std::cout << "Gerando usuários aleatórios...\n";
-        std::string result = this->execute("python3 db/generate_users.py " + std::to_string(num));
+        std::string result = this->execute(this->pythonCommand + "db/generate_users.py " + std::to_string(num));
         std::vector<std::string> values = this->parseResults(result);
 
         return 0;
@@ -188,7 +171,7 @@ int DataManager::addUser(
 ) {
     try {
         std::cout << "Adicionando usuário...\n";
-        std::string command = "python3 db/add_user.py " + email + " " + password + " '" + name + "' " + birthdate + " " + gender + " " + cpf + " " + zipCode + " '" + phoneNumber + "'";
+        std::string command = this->pythonCommand + "db/add_user.py " + email + " " + password + " '" + name + "' " + birthdate + " " + gender + " " + cpf + " " + zipCode + " '" + phoneNumber + "'";
         std::string result = this->execute(command);
         std::vector<std::string> values = this->parseResults(result);
         return 0;
@@ -200,7 +183,7 @@ int DataManager::addUser(
 int DataManager::editUser(const int id, const std::string &column, const std::string &value) {
     try {
         std::cout << "Alterando usuário...\n";
-        std::string result = this->execute("python3 db/modify_user.py " + column + " '" + value + "' " + std::to_string(id));
+        std::string result = this->execute(this->pythonCommand + "db/modify_user.py " + column + " '" + value + "' " + std::to_string(id));
         std::vector<std::string> values = this->parseResults(result);
         return 0;
     } catch (const std::exception& e) {

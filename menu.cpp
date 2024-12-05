@@ -26,6 +26,7 @@ Menu::Menu() {
     #else
         systemType = OTHER;
     #endif
+    manager.setSystemType(systemType);
 }
 
 void Menu::clearConsole() {
@@ -245,11 +246,6 @@ int Menu::start() {
         }
 
         switch (opt) {
-            case 0: {
-                this->manager.close();
-                break;
-            }
-
             case 1: {
                 this->manager.addUser(
                     this->inputEmail(),
@@ -280,17 +276,6 @@ int Menu::start() {
             }
 
             case 4: {
-                if (!manager.getHasDependencies()){
-                    std::cout << "Essa ação utiliza uma biblioteca em python.\n";
-                    std::cout << "Caso ela não esteja instalada em sua máquina, o programa realiza a instalação para prosseguir e a remove quando for encerrado.\n";
-                    std::cout << "Deseja prosseguir? (s/n)\n-> ";
-                    std::string confirm;
-                    bool valid = this->inputAndValidate(&confirm, "s");
-                    if (!valid) {
-                        break;
-                    }
-                }
-
                 std::cout << "Numero do usuários a serem gerados (1 - 100k): ";
                 int num;
                 valid = this->inputAndValidate(&num, 1, 100000);
