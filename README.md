@@ -8,13 +8,12 @@ O projeto depende dos seguintes componentes:
 
 1. **C++11 ou superior**: Para compilar o código C++.
 2. **Python 3**: Para rodar os scripts Python, que são usados para interagir com o banco de dados.
+3. **Pacote faker**: Utilizado no script Python para gerar usuários aleatórios. Ele pode ser instalado globalmente ou num ambiente virtual dentro do projeto com o seguinte comando: **pip3 install faker**
 
 ## Compilação, execução e limpeza
 
 1. Para compilar o código C++, basta executar o comando: **make**. Isso irá gerar o executável `app` a partir dos arquivos fonte.
-
 2. Após compilar o projeto, execute o programa com: **./app**.
-
 3. Quando terminar, você pode executar o comando: **make clean**. Isso vai deletar os arquivos gerados pela compilação do projeto.
 
 ## Como utilizar
@@ -26,10 +25,6 @@ Ao executar o programa, é necessário fazer login. É apresentada uma simples v
 ### 2. Menu:
 
 Após entrar no menu, o programa irá apresentar opções de funcionalidade (números), confirmações (sim ou não) e informações de usuário/pesquisa, que devem ser fornecidos no console.
-
-### 3. Encerramento:
-
-Certifique-se de encerrar o programa pela opção fornecida ao invés de terminar o processo, pois ele realiza a limpeza de dependências potêncialmente instaladas durante a sua execução.
 
 ## Funcionalidades
 
@@ -52,4 +47,4 @@ Os scripts Python no diretório `db/` são responsáveis por realizar as operaç
 -   **`modify_user.py`**: Modifica um usuário existente.
 -   **`delete_user.py`**: Deleta um usuário.
 -   **`erase_data.py`**: Reinicia o banco de dados apagando a tabela existente e criando uma nova.
--   **`generate_users.py`**: Gera usuários aleatórios utilizando o pacote `faker`, que é instalado automaticamente pelo programa caso o usuário permita.
+-   **`generate_users.py`**: Gera usuários aleatórios utilizando o pacote `faker`.
