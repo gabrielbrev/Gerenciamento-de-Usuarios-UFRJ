@@ -1,7 +1,11 @@
 import sqlite3
 import sys
 import returns
-from faker import Faker
+
+try:
+    from faker import Faker
+except:
+    print(" ")
 
 conn = sqlite3.connect('./db/database.db')
 db = conn.cursor()
